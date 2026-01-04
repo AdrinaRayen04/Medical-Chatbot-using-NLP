@@ -1,0 +1,51 @@
+<link rel="stylesheet" href="/static/style.css">
+
+<div class="container">
+  <h2>Medical Chatbot</h2>
+
+  <div id="messages" class="chat-box"></div>
+
+  <div class="input-area">
+    <input id="msg" placeholder="Ask a medical question">
+    <button onclick="send()">Send</button>
+    <button onclick="startVoice()">🎤</button>
+  </div>
+
+  <div class="bottom-bar">
+    <a href="/dashboard">⬅ Back to Dashboard</a>
+    <div class="profile">
+      👤 {{ session["user"] }}
+    </div>
+  </div>
+</div>
+
+<script>
+async function send() {
+  let m = msg.value;
+  if (!m) return;
+
+  messages.innerHTML += `<p><b>You:</b> ${m}</p>`;
+  msg.value = "";
+
+  let r = await fetch("/chat", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({message:m})
+  });
+
+  let d = await r.json();
+  messages.innerHTML += `<p><b>Bot:</b> ${d.reply}</p>`;
+  messages.scrollTop = messages.scrollHeight;
+}
+
+/* VOICE INPUT */
+function startVoice() {
+  const recognition = new webkitSpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.start();
+
+  recognition.onresult = function(event) {
+    msg.value = event.results[0][0].transcript;
+  };
+}
+</script>
